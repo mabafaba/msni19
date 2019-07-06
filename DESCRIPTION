@@ -16,4 +16,7 @@ Imports:
     dplyr,
     purrr
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

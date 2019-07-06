@@ -1,0 +1,68 @@
+---
+title: "How to use the msni19 package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Manual}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+```{r setup}
+library(msni19)
+```
+
+Example input
+
+```{r, include=FALSE}
+input <- read.csv("../tests/testthat/possible_inputs.csv")
+```
+
+```{r,eval = FALSE}
+input
+```
+
+```{r,echo = FALSE}
+
+head(input) %>% (knitr::kable) %>% (kableExtra::kable_styling)
+
+```
+
+Calculating the msni score:
+
+```{r,echo = TRUE}
+
+msni_score <- msni(education = input$education,
+     fsl = input$fsl,
+     health = input$fsl,
+     protection = input$protection,
+     shelter = input$shelter,
+     wash = input$shelter,
+     capacity_gaps = input$capacity_gaps,
+     impact = input$impact)
+
+```
+
+the result is a vector:
+
+```{r}
+head(msni_score)
+
+```
+
+
+```{r,fig.width=4}
+hist(msni_score)
+```
+
+
+Please find <a href = "Methodology.html">details on the methodology in this dedicated vignette</a>.
+

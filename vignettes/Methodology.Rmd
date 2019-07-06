@@ -1,0 +1,88 @@
+---
+title: "Methodology"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Methodology}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+For instructions on using this package, see the Please find <a href = "Manual.html">How to use the msni19 package vignette</a>.
+
+## Rationale
+
+- Wash, fsl and capacity gaps can each drive up the msni by themselved (i.e. if Wash is 3, the msni will be at least 3 no matter what)  
+    - capacity gaps is included to take into account that households may have low living standard gaps at the expense of extreme coping strategies
+- Health, protection and shelter drive up the msni in combinations of two.
+- education: Education living standard gaps contribute to the msni, but do not produce "extreme" (4) situations if needs are already high in for example food security and wash   
+- impact: this is used as a "contributing factor"; with high impact scores, any sectoral sub index can drive up the msni  
+
+## Implementation
+
+### Description
+
+The calculation can be described as follows:
+
+For each household individually...
+
+  1. set `msni` to the largest value of `health`, `protection` and `shelter`
+  2. set `msni` to the `impact` score, if `impact` is lower than the previous `msni`. 
+  3. set `msni` to the largets value of `msni`, `wash`, `fsl`, `capacity gaps` if that is larger than the previous `msni`
+  4. set `msni` to `2` _if and only if_
+      1. `msni` is currently `1`
+      2. _and_ one of health, protection, shelter and education is larger or equal `3`
+  5. set `msni` to `NA` if *any* of the input scores was `NA`
+  6. done!
+
+### Code
+
+Here is the actual code.
+
+```{r, eval = FALSE}
+
+#  1. set `msni` to the largest value of `health`, `protection` and `shelter`
+msni <- pmax(health_lsg,protection_lsg,shelter_lsg)
+
+#  2. set `msni` to the `impact` score, if `impact` is lower than the previous `msni`. 
+msni <- pmin(msni, impact)
+
+#  3. set `msni` to the largets value of `msni`, `wash`, `fsl`, `capacity gaps` if that is larger than the previous `msni`
+largest_lsg_combination_hps <- pmax(
+  pmin(health_lsg,protection_lsg),
+  pmin(health_lsg, shelter_lsg),
+  pmin(protection_lsg)
+)
+
+msni <- pmax(msni, largest_lsg_combination_hps)
+
+# If higher than current, replace with highest from wash, FSL or capacity gap
+msni <- pmax(msni, wash_lsg,fsl_lsg,capacity_gaps)
+
+
+#4.A is `msni` is currently `1` _and_ one of health, protection, shelter and education is larger than `3` ?
+replacement_condition <- (msni == 1 & pmax(health_lsg,
+                                           protection_lsg,
+                                           shelter_lsg,
+                                           education_lsg) >= 3)
+
+# 4.B set `msni` to `2` where condition above applies
+msni[replacement_condition] <- 2
+
+```
+
+Dictionary for non-programmers:
+
+- ` <- ` means "resplace" or "assign" the value to the name
+- ` pmin() ` the smallest of the values in parenthesis (per record)
+- ` pmax() ` the largest of the values in parenthesis (per record)
+- `variable[condition] <-` replace / assign only if/where condition is met
+
+
+

@@ -1,13 +1,11 @@
-# Calculate the MSNI for 2019
-msni19 <- function( education_lsg,
-                    fsl_lsg,
-                    health_lsg,
-                    protection_lsg,
-                    shelter_lsg,
-                    wash_lsg,
-                    capacity_gaps,
-                    impact
-                    ){
+
+#' Calculate the MSNI for 2019
+#' @param *_lsg vector of sectoral living standard gap scores (1-4)
+#' @param capacity_gaps vector of capacity gap scores (1-4)
+#' @param impact vector of impact scores (1-4)
+#' @return vector of msni scores
+#' @export
+msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_lsg,capacity_gaps,impact){
 
 
   # ensure proper input:
@@ -37,13 +35,13 @@ msni19 <- function( education_lsg,
   assertthat::assert_that(!is.factor(capacity_gaps),msg =factorerror(capacity_gaps))
   assertthat::assert_that(!is.factor(impact),msg =factorerror(capacity_gaps))
 
-  assertthat::assert_that(typeof(education_lsg) %in% c("numeric","double"),message('education_lsg must be a numeric vector'))
-  assertthat::assert_that(typeof(fsl_lsg) %in% c("numeric","double"),message('fsl_lsg must be numeric'))
-  assertthat::assert_that(typeof(health_lsg) %in% c("numeric","double"),message('health_lsg must be a numeric vector'))
-  assertthat::assert_that(typeof(protection_lsg) %in% c("numeric","double"),message('protection_lsg a numeric vector'))
-  assertthat::assert_that(typeof(capacity_gaps) %in% c("numeric","double"),message('capacity_gaps must be a numeric vector'))
-  assertthat::assert_that(typeof(wash_lsg) %in% c("numeric","double"),message('wash_lsg must be numeric'))
-  assertthat::assert_that(typeof(impact) %in% c("numeric","double"),message('wash_lsg must be numeric'))
+  assertthat::assert_that(typeof(education_lsg) %in% c("numeric","double", "integer"), msg =('education_lsg must be a numeric vector'))
+  assertthat::assert_that(typeof(fsl_lsg) %in% c("numeric","double", "integer"), msg =('fsl_lsg must be numeric'))
+  assertthat::assert_that(typeof(health_lsg) %in% c("numeric","double", "integer"), msg =('health_lsg must be a numeric vector'))
+  assertthat::assert_that(typeof(protection_lsg) %in% c("numeric","double", "integer"), msg =('protection_lsg a numeric vector'))
+  assertthat::assert_that(typeof(capacity_gaps) %in% c("numeric","double", "integer"), msg =('capacity_gaps must be a numeric vector'))
+  assertthat::assert_that(typeof(wash_lsg) %in% c("numeric","double", "integer"), msg =('wash_lsg must be numeric'))
+  assertthat::assert_that(typeof(impact) %in% c("numeric","double", "integer"), msg =('wash_lsg must be numeric'))
 
   inputs_numeric <- inputs %>% lapply(is.numeric) %>% unlist %>% .[!.] %>% names
   if(length(inputs_numeric)!=0){
@@ -60,18 +58,19 @@ msni19 <- function( education_lsg,
   if(!all_same_length){stop("all inputs must be vectors of the same length")}
 
 
-  # 1. start with largest from health, prot, shelter:
+  # 1. start with largest from health, protection, shelter:
   msni <- pmax(health_lsg,protection_lsg,shelter_lsg)
   # 2. replace if impact if impact is lower:
   msni <- pmin(msni, impact)
 
-  #' 3.  Replace with minimum score of any two combinations of
-  #' health, prot, and shelter
-  #' if higher than the previous score:
+  # 3.  Replace with minimum score of any two combinations of
+  # health, prot, and shelter
+  # if higher than the previous score:
   largest_lsg_combo <- pmax(
     pmin(health_lsg,protection_lsg),
     pmin(health_lsg, shelter_lsg),
-    pmin(shelter_lsg, protection_lsg)
+    pmin(
+      protection_lsg)
   )
 
   msni <- pmax(msni, largest_lsg_combo)
@@ -86,7 +85,7 @@ msni19 <- function( education_lsg,
                                      education_lsg) >= 3)
 
   # Note 2: if now msni = 1 but education >=3, then 2
-  msni[note_1_applies]<- 2
+  msni[where_notes_apply]<- 2
 
   #
   # done!
