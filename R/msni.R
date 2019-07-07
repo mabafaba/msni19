@@ -69,8 +69,7 @@ msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_
   largest_lsg_combo <- pmax(
     pmin(health_lsg,protection_lsg),
     pmin(health_lsg, shelter_lsg),
-    pmin(
-      protection_lsg)
+    pmin(shelter_lsg,protection_lsg)
   )
 
   msni <- pmax(msni, largest_lsg_combo)

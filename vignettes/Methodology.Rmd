@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-For instructions on using this package, see the Please find <a href = "Manual.html">How to use the msni19 package vignette</a>.
+For instructions on using this package, please see the<a href = "Manual.html">package Manual</a>.
 
 ## Rationale
 
@@ -57,7 +57,7 @@ msni <- pmin(msni, impact)
 largest_lsg_combination_hps <- pmax(
   pmin(health_lsg,protection_lsg),
   pmin(health_lsg, shelter_lsg),
-  pmin(protection_lsg)
+  pmin(protection_lsg,shelter_lsg)
 )
 
 msni <- pmax(msni, largest_lsg_combination_hps)
