@@ -1,11 +1,25 @@
 
 #' Calculate the MSNI for 2019
-#' @param *_lsg vector of sectoral living standard gap scores (1-4)
+#' @param education_lsg vector of sectoral living standard gap score (1-4 or 1-5)
+#' @param fsl_lsg vector of sectoral living standard gap score (1-4 or 1-5)
+#' @param health_lsg vector of sectoral living standard gap score (1-4 or 1-5)
+#' @param protection_lsg vector of sectoral living standard gap score (1-4 or 1-5)
+#' @param shelter_lsg vector of sectoral living standard gap score (1-4 or 1-5)
+#' @param wash_lsg vector of sectoral living standard gap score (1-4 or 1-5)
 #' @param capacity_gaps vector of capacity gap scores (1-4)
 #' @param impact vector of impact scores (1-4)
+#' @param ... additional scores that set the total score to at least 2 if one of the provided scores is >=3
 #' @return vector of msni scores
 #' @export
-msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_lsg,capacity_gaps,impact){
+msni<-function(education_lsg,
+               fsl_lsg,
+               health_lsg,
+               protection_lsg,
+               shelter_lsg,
+               wash_lsg,
+               capacity_gaps,
+               impact,
+               ...){
 
 
   # ensure proper input:
@@ -19,7 +33,8 @@ msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_
     shelter_lsg=shelter_lsg,
     wash_lsg=wash_lsg,
     capacity_gaps=capacity_gaps,
-    impact = impact)
+    impact = impact,
+    ...)
 
   factorerror<-function(name){
     paste(name,
@@ -43,15 +58,26 @@ msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_
   assertthat::assert_that(typeof(wash_lsg) %in% c("numeric","double", "integer"), msg =('wash_lsg must be numeric'))
   assertthat::assert_that(typeof(impact) %in% c("numeric","double", "integer"), msg =('wash_lsg must be numeric'))
 
-  inputs_numeric <- inputs %>% lapply(is.numeric) %>% unlist %>% .[!.] %>% names
-  if(length(inputs_numeric)!=0){
-    stop(paste("inputs must be numeric:", paste(inputs_numeric,collapse = ", ")))
+
+  custom_input_indices<-list(...)
+  purrr::walk2(custom_input_indices,names(custom_input_indices),function(x,varname){
+    if(is.factor(x)){stop(factorerror(varname))}
+    if(!(typeof(x) %in% c("numeric","double", "integer"))){stop(paste(varname," must be numeric"))}
+
+  })
+
+
+  inputs_numeric <- inputs %>% lapply(is.numeric) %>% unlist
+  inputs_numeric_names <- inputs_numeric[!inputs_numeric] %>% names
+  if(length(inputs_numeric_names)!=0){
+    stop(paste("inputs must be numeric:", paste(inputs_numeric_names,collapse = ", ")))
   }
 
-  inputs_range <-  inputs %>% lapply(function(x){all(x>=0) & all(x<=4)}) %>% unlist %>% .[!.] %>% names
+  inputs_range <-  inputs %>% lapply(function(x){all(x>=0) & all(x<=4)}) %>% unlist
+  inputs_range_names <- inputs_range[!inputs_range] %>% names
 
-  if(length(inputs_numeric)!=0){
-    stop(paste("inputs are not in range 0-4:", paste(inputs_range,collapse = ", ")))
+  if(length(inputs_range_names)!=0){
+    stop(paste("inputs are not in range 0-5:", paste(inputs_range_names,collapse = ", ")))
   }
 
   all_same_length <-  inputs %>% lapply(length) %>% unlist %>% (function(x){length(unique(x))==1})
@@ -77,14 +103,16 @@ msni<-function(education_lsg,fsl_lsg,health_lsg,protection_lsg,shelter_lsg,wash_
   # If higher than current, replace with highest from wash, FSL or capacity gap
   msni<-pmax(msni, wash_lsg,fsl_lsg,capacity_gaps)
 
-  # Notes: if now msni = 1 but health, protection or shelter >3, then 2
-  where_notes_apply <- (msni == 1 & pmax(health_lsg,
-                                     protection_lsg,
-                                     shelter_lsg,
-                                     education_lsg) >= 3)
+  # Notes: if now msni = 1 but health, protection, shelter, education or custom variables are >3, then set to 2
 
-  # Note 2: if now msni = 1 but education >=3, then 2
-  msni[where_notes_apply]<- 2
+  max_of_remaining <- c(custom_input_indices,list(health_lsg,protection_lsg,shelter_lsg,education_lsg)) %>%
+    as.data.frame(stringsAsFactors = FALSE) %>%
+    apply(1,max,na.rm = FALSE)
+  max_of_remaining_larger_equal_3 <- max_of_remaining >= 3
+
+  note_applies<-(msni ==1) & max_of_remaining_larger_equal_3
+
+  msni[note_applies]<- 2
 
   #
   # done!

@@ -39,13 +39,12 @@ head(input) %>% (knitr::kable) %>% (kableExtra::kable_styling)
 Calculating the msni score:
 
 ```{r,echo = TRUE}
-
 msni_score <- msni(education = input$education,
-     fsl = input$fsl,
-     health = input$fsl,
-     protection = input$protection,
-     shelter = input$shelter,
-     wash = input$shelter,
+     fsl_lsg = input$fsl,
+     health_lsg = input$fsl,
+     protection_lsg = input$protection,
+     shelter_lsg = input$shelter,
+     wash_lsg = input$wash,
      capacity_gaps = input$capacity_gaps,
      impact = input$impact)
 
@@ -62,6 +61,25 @@ head(msni_score)
 ```{r,fig.width=4}
 hist(msni_score)
 ```
+
+You can add additional variables as custom arguments (in dots ...). they will be treated exactly like `education_lsg`:
+
+```{r}
+another_source_index_that_is_not_in_the_original_msni <- runif(500,1,4)
+custom_msni_score <- msni(education_lsg = input$education,
+     fsl_lsg = input$fsl,
+     health_lsg = input$health,
+     protection_lsg = input$protection,
+     shelter_lsg = input$shelter,
+     wash_lsg = input$wash,
+     capacity_gaps = input$capacity_gaps,
+     impact = input$impact,
+     another_source_index_that_is_not_in_the_original_msni
+     )
+
+head(custom_msni_score)
+```
+
 
 
 Please find <a href = "Methodology.html">details on the methodology in this dedicated vignette</a>.

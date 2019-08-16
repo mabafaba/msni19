@@ -5,14 +5,26 @@
 \title{Calculate the MSNI for 2019}
 \usage{
 msni(education_lsg, fsl_lsg, health_lsg, protection_lsg, shelter_lsg,
-  wash_lsg, capacity_gaps, impact)
+  wash_lsg, capacity_gaps, impact, ...)
 }
 \arguments{
+\item{education_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
+\item{fsl_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
+\item{health_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
+\item{protection_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
+\item{shelter_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
+\item{wash_lsg}{vector of sectoral living standard gap score (1-4 or 1-5)}
+
 \item{capacity_gaps}{vector of capacity gap scores (1-4)}
 
 \item{impact}{vector of impact scores (1-4)}
 
-\item{*_lsg}{vector of sectoral living standard gap scores (1-4)}
+\item{...}{additional scores that set the total score to at least 2 if one of the provided scores is >=3}
 }
 \value{
 vector of msni scores

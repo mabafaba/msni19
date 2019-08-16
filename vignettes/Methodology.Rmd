@@ -37,7 +37,7 @@ For each household individually...
   3. set `msni` to the largets value of `msni`, `wash`, `fsl`, `capacity gaps` if that is larger than the previous `msni`
   4. set `msni` to `2` _if and only if_
       1. `msni` is currently `1`
-      2. _and_ one of health, protection, shelter and education is larger or equal `3`
+      2. _and_ one of health, protection, shelter and education (or one of the additionally supplied indices) is larger or equal `3`
   5. set `msni` to `NA` if *any* of the input scores was `NA`
   6. done!
 
@@ -67,13 +67,15 @@ msni <- pmax(msni, wash_lsg,fsl_lsg,capacity_gaps)
 
 
 #4.A is `msni` is currently `1` _and_ one of health, protection, shelter and education is larger than `3` ?
-replacement_condition <- (msni == 1 & pmax(health_lsg,
-                                           protection_lsg,
-                                           shelter_lsg,
-                                           education_lsg) >= 3)
+
+max_of_remaining <- c(custom_input_indices,list(health_lsg,protection_lsg,shelter_lsg,education_lsg)) %>%
+  as.data.frame(stringsAsFactors = FALSE) %>%
+  apply(1,max,na.rm = FALSE)
+max_of_remaining_larger_equal_3 <- max_of_remaining >= 3
+note_applies<-(msni ==1) & max_of_remaining_larger_equal_3
 
 # 4.B set `msni` to `2` where condition above applies
-msni[replacement_condition] <- 2
+msni[note_applies]<- 2
 
 ```
 
