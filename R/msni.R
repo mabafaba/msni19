@@ -73,11 +73,11 @@ msni<-function(education_lsg,
     stop(paste("inputs must be numeric:", paste(inputs_numeric_names,collapse = ", ")))
   }
 
-  inputs_range <-  inputs %>% lapply(function(x){all(x>=0) & all(x<=4)}) %>% unlist
+  inputs_range <-  inputs %>% lapply(function(x){all(x>=1) & all(x<=4)}) %>% unlist
   inputs_range_names <- inputs_range[!inputs_range] %>% names
 
   if(length(inputs_range_names)!=0){
-    stop(paste("inputs are not in range 0-5:", paste(inputs_range_names,collapse = ", ")))
+    stop(paste("inputs are not in range 1-4:", paste(inputs_range_names,collapse = ", ")))
   }
 
   all_same_length <-  inputs %>% lapply(length) %>% unlist %>% (function(x){length(unique(x))==1})
